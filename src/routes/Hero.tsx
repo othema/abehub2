@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import lightPosts from "../img/posts-light.png";
 import darkPosts from "../img/posts-dark.png";
 
+
 function Hero() {
 	if (pb.authStore.model) {
     window.location.replace("/home");
