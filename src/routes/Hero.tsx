@@ -5,10 +5,6 @@ import GradientText from "../components/GradientText";
 import { pb } from "../lib/pocketbase";
 import { Link } from "react-router-dom";
 
-import lightPosts from "../img/posts-light.png";
-import darkPosts from "../img/posts-dark.png";
-
-
 function Hero() {
 	if (pb.authStore.model) {
     window.location.replace("/home");
@@ -47,7 +43,7 @@ function Hero() {
         </Title>
 
         <Image
-          src={theme.colorScheme === "dark" ? darkPosts : lightPosts}
+          src={theme.colorScheme === "dark" ? "/img/posts-dark.png" : "/img/posts-light.png"}
           width={300}
           mx="auto"
           mt={13}
