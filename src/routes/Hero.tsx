@@ -5,8 +5,8 @@ import GradientText from "../components/GradientText";
 import { pb } from "../lib/pocketbase";
 import { Link } from "react-router-dom";
 
-import lightPosts from "../../public/img/posts-light.png";
-import darkPosts from "../../public/img/posts-dark.png";
+import lightPosts from "../img/posts-light.png";
+import darkPosts from "../img/posts-dark.png";
 
 function Hero() {
 	if (pb.authStore.model) {
