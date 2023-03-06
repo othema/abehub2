@@ -104,7 +104,7 @@ function UserPage() {
           }}
         >
           <Avatar
-            size={mobileScreen ? "85%" : 240}
+            size={240}
             style={{
               marginLeft: tabletScreen ? "auto" : 0,
               marginRight: tabletScreen ? "auto" : 0,

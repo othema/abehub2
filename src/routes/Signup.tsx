@@ -51,7 +51,7 @@ export default function Signup() {
 		} catch (err) {
 			if (!(err instanceof ClientResponseError)) return;
 			if (err.status === 400) {
-				for (const [key, value] of Object.entries(err.data.data)) {
+				for (const [key, value] of Object.entries(err.data.data) as any) {
 					form.setFieldError(key, value.message);
 				}
 			}
