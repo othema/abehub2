@@ -1,4 +1,4 @@
-import { Title, Group, Avatar, useMantineTheme, Text, Divider, Skeleton, ScrollArea, TextInput, ActionIcon, Stack } from "@mantine/core";
+import { Title, Group, Avatar, useMantineTheme, Text, Divider, Skeleton, ScrollArea, TextInput, ActionIcon, Stack, Loader } from "@mantine/core";
 import { IconSend } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -34,6 +34,7 @@ function ChatView() {
 	const [messagesPage, setMessagesPage] = useState<any>(null);
 	const [messages, setMessages] = useState<any>(null);
 	const [newMessage, setNewMessage] = useState("");
+	const [messageSending, setMessageSending] = useState(false);
 
 	const chatView = useRef<HTMLDivElement>(null);
 
@@ -43,12 +44,13 @@ function ChatView() {
 			if (!chatId) return;
 
 			setChatData(await pb.collection("chats").getOne(chatId, { $autoCancel: false, expand: "members" }));
-			const m = await pb.collection("messages").getList(-1, 50, { filter: filter, sort: "created", $autoCancel: false });
+			const m = await pb.collection("messages").getList(-1, 50, { filter: filter, sort: "created", $autoCancel: false, expand: "from" });
 			setMessagesPage(m);
 			setMessages(m.items);
 		
 			await pb.collection("messages").subscribe("*", async ({ action, record }) => {
-				setMessages((oldMessages: any) => [...oldMessages, record]);
+				const recievedMessage = await pb.collection("messages").getOne(record.id, { expand: "from" });
+				setMessages((oldMessages: any) => [...oldMessages, recievedMessage]);
 			});
 		})();
 		return () => { pb.collection("messages").unsubscribe("*"); console.log("hi") }
@@ -56,14 +58,19 @@ function ChatView() {
 
 	async function postMessage() {
 		if (!chatData) return;
+		setMessageSending(true);
 		await pb.collection("messages").create({
 			from: pb.authStore.model?.id,
 			chat: chatData.id,
 			text: newMessage
 		});
-		chatView.current?.scrollTo({ top: chatView.current.scrollHeight, behavior: "smooth" });
 		setNewMessage("");
+		setMessageSending(false);
 	}
+
+	useEffect(() => {
+		chatView.current?.scrollTo({ top: chatView.current.scrollHeight, behavior: "smooth" });
+	}, [messages])
 
 	const members = chatData?.expand?.members;
 	const isGroup = members?.length > 2;
@@ -103,8 +110,11 @@ function ChatView() {
 			</ScrollArea>
 			<form onSubmit={(e) => { e.preventDefault(); postMessage() }}>
 				<TextInput
+					disabled={messageSending}
 					placeholder={chatData ? placeholder : ""}
-					rightSection={(
+					rightSection={messageSending ? (
+						<Loader size="sm" />
+					) : (
 						<ActionIcon size="sm" disabled={newMessage.trim().length == 0}>
 							<IconSend />
 						</ActionIcon>

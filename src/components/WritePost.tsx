@@ -1,5 +1,6 @@
-import { Avatar, Paper, Textarea, Group, Text, useMantineTheme, Button, Divider } from "@mantine/core";
+import { Avatar, Paper, Textarea, Group, Text, useMantineTheme, Button, Divider, LoadingOverlay } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useState } from "react";
 import { avatarUrl, pb, PB_URL } from "../lib/pocketbase";
 import Verified from "./Verified";
 
@@ -15,17 +16,22 @@ function WritePost({ callback }: { callback?: () => void }) {
 
 	async function postForm(values: any) {
 		if (!pb.authStore.model) return;
+		setLoading(true);
 		await pb.collection("posts").create({
 			text: values.content,
 			user: pb.authStore.model.id
 		});
 		callback?.();
+		setLoading(false);
 		form.setFieldValue("content", "");
 	}
 
+	const [loading, setLoading] = useState(false);
+
 	return (
     <form onSubmit={form.onSubmit((values) => postForm(values))}>
-      <Paper withBorder p="md" shadow="sm">
+			<Paper withBorder p="md" shadow="sm" pos="relative">
+				<LoadingOverlay visible={loading} />
         <Group>
           <Avatar
             radius="xl"

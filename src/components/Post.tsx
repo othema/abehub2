@@ -1,4 +1,4 @@
-import { Avatar, Group, Paper, Text, useMantineTheme, ActionIcon, Anchor, Menu, Skeleton } from "@mantine/core";
+import { Avatar, Group, Paper, Text, useMantineTheme, ActionIcon, Anchor, Menu, Skeleton, LoadingOverlay } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { IconThumbUp, IconThumbUpFilled, IconMessageCircle2, IconShare, IconDots, IconTrash, IconAlertTriangle } from "@tabler/icons-react";
 import { ClientResponseError } from "pocketbase";
@@ -22,10 +22,12 @@ function Post({ data, withBorder = false, margin = true, deleteCallback }: { dat
 	const [commentCount, setCommentCount] = useState(0);
 
 	const postTime = readableDate(data?.created);
+	const [loading, setLoading] = useState(false);
 
 	const mobileScreen = useMediaQuery(MOBILE);
 
 	async function deletePost() {
+		setLoading(true);
 		await pb.collection("posts").delete(data?.id);
 		deleteCallback?.();
 	}
@@ -61,9 +63,8 @@ function Post({ data, withBorder = false, margin = true, deleteCallback }: { dat
 					setLiked(true);
 				}
 			});
-			setLikeCount(data.expand["likes(post)"].length);
-			setCommentCount(data.expand["posts(replying_to)"].length);
-			console.log(data.expand);
+			try { setLikeCount(data.expand["likes(post)"].length) } catch (_) { }
+			try { setCommentCount(data.expand["posts(replying_to)"].length) } catch (_) { }
 		}
 
 		fetchData();
@@ -82,7 +83,9 @@ function Post({ data, withBorder = false, margin = true, deleteCallback }: { dat
 					backgroundColor: theme.colorScheme === "dark" ? theme.fn.darken(theme.colors.dark[6], 0.2) : theme.colors.gray[1]
 				}
 			})}
+			pos="relative"
 		>
+			<LoadingOverlay visible={loading} />
 			<Menu position="bottom-end" transition="pop-top-right" shadow="sm">
 				<Menu.Target>
 					<ActionIcon color="dark" size="sm" style={{ float: "right" }} onClick={(e: any) => e.preventDefault()}>

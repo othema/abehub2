@@ -56,17 +56,22 @@ function UserPage() {
 
 	async function getFollow() {  // Followers, following, if user is following
 		if (!userId) return;
-		const f = await pb.collection("follows").getFullList(100, { filter: `user2='${userId}'` });
-		setFollowersAmount(f.length);
-		setFollowingAmount((await pb.collection("follows").getFullList(100, { filter: `user='${userId}'` })).length);
 
-		for (const follow of f) {
-			console.log(follow, pb.authStore.model?.id);
-			if (follow.user === pb.authStore.model?.id) {
-				setFollowId(follow.id);
-				break;
-			}
-		}
+		pb.collection("follows").getFullList(100, { filter: `user2='${userId}'` }).then((records) => {
+			setFollowersAmount(records.length);
+			for (const follow of f) {
+        if (follow.user === pb.authStore.model?.id) {
+          setFollowId(follow.id);
+          break;
+        }
+      }
+		})
+
+		pb.collection("follows").getFullList(100, { filter: `user='${userId}'` }).then((records) => {
+			setFollowingAmount(records.length);
+		});
+
+		
 	}
 
 	async function getPosts() {

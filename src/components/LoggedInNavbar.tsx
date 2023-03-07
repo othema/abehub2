@@ -1,4 +1,4 @@
-import { Alert, Avatar, Group, Header, Menu, Text, Anchor, TextInput, Autocomplete, useMantineTheme, Box, Loader, Button} from "@mantine/core";
+import { Alert, Avatar, Group, Header, Menu, Text, Anchor, TextInput, Autocomplete, useMantineTheme, Box, Loader, Button, SelectItemProps} from "@mantine/core";
 import { useDebouncedState, useMediaQuery } from "@mantine/hooks";
 import { IconLogout, IconUser, IconSettings, IconQuestionMark, IconMessageDots, IconSearch } from "@tabler/icons-react";
 import { forwardRef, useEffect, useState } from "react";
@@ -31,7 +31,7 @@ function LoggedInNavbar() {
 			};
 			setLoadingSearch(true);
 			const req = await pb.collection("users").getList(1, 5, { filter: `username ~ '${search}' || name ~ '${search}'` });
-			setUserAutocomplete(req.items.map((item) => ({ ...item, value: item.name })));
+			setUserAutocomplete(req.items.map((item) => ({ data: item, value: item.name })));
 			setLoadingSearch(false);
 		})();
 		
@@ -87,7 +87,7 @@ function LoggedInNavbar() {
             onChange={setUserSearch}
             itemComponent={UserAutocomplete}
             onItemSubmit={(item) => {
-              navigate("/users/" + item.id);
+              navigate("/users/" + item.data.id);
               setUserSearch("");
             }}
             nothingFound={
@@ -220,35 +220,29 @@ function LoggedInNavbar() {
   );
 }
 
-const UserAutocomplete = forwardRef<HTMLDivElement>((data: any, ref) => {
+interface UserAutocompleteProps extends SelectItemProps {
+	data: any;
+}
+
+const UserAutocomplete = forwardRef<HTMLDivElement, UserAutocompleteProps>(({ data, value, ...others}, ref) => {
 	const theme = useMantineTheme();
 	return (
-		<Box ref={ref} p="xs" {...data.others} sx={(theme) => ({
-			":hover": {
-				backgroundColor:
-					theme.colorScheme === "dark"
-						? theme.colors.dark[5]
-						: theme.colors.gray[1],
-			},
-		})}>
-      <Link
-        to={"/users/" + data.id}
-        style={{ textDecoration: "inherit", color: "inherit" }}
-      >
-        <Group
-          noWrap
-        >
-          <Avatar src={avatarUrl(data)} radius="xl" color={theme.primaryColor} />
-          <div>
-            <Verified user={data} size={15} spacing={4}>
-              <Text size="sm">{data.value}</Text>
-            </Verified>
-            <Text size="sm" color="dimmed">
-              @{data.username}
-            </Text>
-          </div>
-        </Group>
-      </Link>
+		<Box ref={ref} p="xs" {...others}>
+			<Group
+				noWrap
+			>
+				<Avatar src={avatarUrl(data)} radius="xl" color={theme.primaryColor}>
+					{data?.name[0].toUpperCase()}
+				</Avatar>
+				<div>
+					<Verified user={data} size={15} spacing={4}>
+						<Text size="sm">{value}</Text>
+					</Verified>
+					<Text size="sm" color="dimmed">
+						@{data.username}
+					</Text>
+				</div>
+			</Group>
     </Box>
   );
 })
